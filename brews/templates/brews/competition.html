@@ -1,0 +1,70 @@
+{% extends "brews/scaffold.html" %}
+
+{% block title %}
+Competition
+{% endblock %}
+
+{% block content %}
+<h1>{{ competition.name }}</h1>
+<h5>{% if today < competition.date %}To be held{% else %}Held{% endif %} on {{ competition.date |date:"M d, Y" }}</h5>
+
+{% if competition.open %}
+    {% if request.user.is_authenticated %} 
+        {% if judgement %}
+            <p>Scoresheet submitted</p>
+            {% comment %}
+            <p><a href="{% url 'judgement' competition.id %}">Edit your scoresheet</a></p>
+            {% endcomment %}
+        {% else %}
+            <p><a href="{% url 'judgement' competition.id %}">Submit your scoresheet</a></p>
+        {% endif %}
+    {% else %}
+    <p><a href="/login/">Login</a> to submit your scoresheet</p>
+    {% endif %}
+{% elif today >= competition.date and results %}
+<h4>Results</h4>
+<ol>
+    {% for entry, score in results.items %} 
+    <li>[{{ entry.label }}] {{ entry.name }} by {% if entry.brewer.first_name or entry.brewer.last_name %}{{ entry.brewer.first_name }} {{ entry.brewer.last_name }}{% else %}{{ entry.brewer }}{% endif %}: {{ score.0|floatformat:1 }}
+        <ul>
+            {% for criterion, criterion_score in score.1.items %}
+            <li>{{ criterion.name }}: {{ criterion_score.0|floatformat:1 }} {{ criterion_score.1 }}</li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% endfor %}
+</ol>
+{% elif competition.entry_set.all.count > 0 %}
+<h4>Currently Registered Entrants</h4>
+<ul>
+    {% for entry in competition.entry_set.all %}
+    <li>{% if entry.brewer.first_name or entry.brewer.last_name %}{{ entry.brewer.first_name }} {{ entry.brewer.last_name }}{% else %}{{ entry.brewer }}{% endif %}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if competition.judgement_set.all.count > 0 %}
+<br />
+<h4>Submitted scoresheets</h4>
+<ul>
+    {% for judgement in competition.judgement_set.all %}
+    <li>{% if judgement.judge.first_name or judgement.judge.last_name %}{{ judgement.judge.first_name }} {{ judgement.judge.last_name }}{% else %}{{ judgement.judge }}{% endif %}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if competition.criteria.count != 0 %}
+    <br />
+    {% if competition.open %} 
+    <h4>Scoring Criteria</h4>
+    {% else %} 
+    <h4>Scoring Range</h4>
+    {% endif %}
+    <ul>
+    {% for criterion in competition.criteria.all %}
+        <li>{{ criterion }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% endblock %}

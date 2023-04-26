@@ -1,0 +1,20 @@
+{% extends "brews/scaffold.html" %}
+{% load socialaccount %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+<p>Welcome {{ user.username }} !!!</p>
+{% else %}
+<a href="{% provider_login_url 'facebook' %}">Login</a>
+{% endif %}
+
+<ul>
+    <li><a href="{% url 'competitions' %}">Competitions</a></li>
+</ul>
+
+{% endblock %}

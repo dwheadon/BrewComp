@@ -1,0 +1,38 @@
+{% extends "brews/scaffold.html" %}
+
+{% block title %}
+Competitions
+{% endblock %}
+
+{% block content %}
+{% if comps_present.count > 0 %}
+<h2>Today's competitions</h2>
+<ul>
+    {% for competition in comps_present %}
+    <li><a href="{% url 'competition' competition.id %}">{{ competition }}</a></li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No competitions today</p>
+{% endif %}
+{% if comps_past.count > 0 %}
+<h2>Past competitions</h2>
+<ul>
+    {% for competition in comps_past %}
+    <li><a href="{% url 'competition' competition.id %}">{{ competition }}</a></li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No past competitions</p>
+{% endif %}
+{% if comps_future.count > 0 %}
+<h2>Upcoming competitions</h2>
+<ul>
+    {% for competition in comps_future %}
+    <li><a href="{% url 'competition' competition.id %}">{{ competition }}</a></li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No future competitions</p>
+{% endif %}
+{% endblock %}

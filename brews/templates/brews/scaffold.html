@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+{% load socialaccount %}
+
+{% block body %}
+<nav class="navbar navbar-expand-md sticky-top">
+    <div class="container-fluid">
+        <a href = "{% url 'home' %}" class = "navbar-brand text-black fw-bold brand-font">
+            <img src="{% static 'brews/beerMug.svg' %}" alt="Logo" width="26px" class="img-fluid d-inline-block align-text-top"> 
+            BrewComp: {% block title %}{% endblock title %}
+        </a>
+        <button class="navbar-toggler" type = "button" data-bs-toggle="collapse" data-bs-target = "#navmenu"> 
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id = "navmenu">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                </li>
+                {% if user.is_authenticated %}
+                {% comment %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'settings' %}">Settings</a>
+                </li>
+                {% endcomment %}
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'account_login' %}">Login</a>
+                </li>
+                {% endif %}
+        
+                {% if user.is_superuser %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin">Admin</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+        
+    </div>
+</nav>
+
+<div class = "container">
+    <br>
+    {% block content %}
+    {% endblock %}
+    <br>
+    <br>
+</div>
+{% endblock %}

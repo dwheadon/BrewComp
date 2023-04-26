@@ -1,0 +1,97 @@
+{% extends "brews/scaffold.html" %}
+
+{% block head_additions %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<style>
+table {
+    border-collapse: collapse;    
+}
+td, th {
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+th:empty {
+    border: 0;
+}
+tr.chosen {
+    background-color: rgb(109, 190, 109);
+}
+tr.unchosen {
+    background-color: rgb(206, 115, 115);
+}
+h3 {
+    margin-top: 1em;
+}
+th.best {
+    border-width: 1px 0px 1px 1px;
+}
+th.worst {
+    border-width: 1px 1px 1px 0px;
+    text-align: right;
+}
+</style>
+{% endblock %}
+
+{% comment %} 
+https://css-tricks.com/radio-buttons-with-2-way-exclusivity/
+{% endcomment %} 
+
+{% block title %}
+Scoresheet
+{% endblock %}
+
+{% block content %}
+<h1>Scoresheet for {{ competition.name }}</h1>
+<form action="." method="post">
+    {% csrf_token %}
+    {% for criterion in competition.criteria.all %}
+    <h3>{{ criterion.name }}</h3>
+    <table>
+        <tr>
+            <th rowspan="2">Brew<br/>Label</th>
+            <th class="best" colspan="{{ competition.entry_set.all.count|add:'-2' }}">Best</th>
+            <th class="worst" colspan="2">Worst</th>
+        </tr>
+        <tr>
+            {% for entry in competition.entry_set.all %}
+            <th>{{ forloop.counter }}</th>
+            {% endfor %}
+        </tr>
+        {% for entry in competition.entry_set.all %}
+        <tr>
+            <td>{{ entry.label }}</td>
+            {% for score in competition.entry_set.all %}
+            <td><input type="radio" name="criterion-{{ criterion.id }}-brew-{{ entry.id }}" data-col="{{ forloop.counter }}" value="{{ forloop.counter }}"></td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    {% endfor %}
+    <br />
+    <button type="submit">Submit</button>
+</form>
+<script>
+    var col, el;
+    
+    $("input[type=radio]").click(function() {
+       el = $(this);
+       col = el.data("col");
+       table = el.parents('table');
+       inputs = table.find("input[data-col=" + col + "]");
+       inputs.each(function( index ) {
+        if ($(this).prop("checked")) {
+            $(this).prop("checked", false);
+            row = $(this).parents('tr');
+            row.removeClass('chosen');
+            row.addClass('unchosen');
+        }
+        });
+       // inputs.prop("checked", false);
+       el.prop("checked", true);
+       row = el.parents('tr');
+       row.removeClass('unchosen');
+       row.addClass('chosen');
+    });
+</script>
+    
+{% endblock %}
