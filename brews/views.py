@@ -114,3 +114,12 @@ def judgement(request, competition_id):
         }
         return render(request, "brews/judgement.html", context)
 
+
+@login_required
+def judgement_error(request, competition_id):
+    competition = Competition.objects.get(id=competition_id)
+    context = {
+        'request': request,
+        'competition': competition,
+    }
+    return render(request, "brews/judgement_error.html", context)
