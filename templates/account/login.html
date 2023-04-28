@@ -14,7 +14,7 @@
 {% if socialaccount_providers %}
 
 <div class="socialaccount_ballot mb-4">
-  <a href="{% provider_login_url "facebook" method="js_sdk" %}" class="btn btn-block btn-social btn-facebook" style="background-color:#3b5998;text-align:center">
+  <a href="{% provider_login_url 'facebook' method='oauth2' %}" class="btn btn-block btn-social btn-facebook" style="background-color:#3b5998;text-align:center">
     <i class="bi bi-facebook"></i><span class="fa fa-facebook"></span>
                  Sign in with Facebook
    </a>
