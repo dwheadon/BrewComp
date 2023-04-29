@@ -6,6 +6,10 @@ from django.utils import timezone
 
 
 @login_required
+def feedback(request):
+    return HttpResponse("under construction")
+
+@login_required
 def competitions(request):
     # return HttpResponse("Choose a competition.")
     today = timezone.now().date()
