@@ -1,0 +1,70 @@
+{% extends "brews/scaffold.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+Heat
+{% endblock %}
+
+{% block content %}
+<h1><a href="{% url 'competition' heat.round.competition.id %}">{{ heat.round.competition.name }}</a></h1>
+<h5><a href="{% url 'round' heat.round.id %}">Round {{ heat.round.number }}</a>: Heat {{ heat.number }}</h5>
+
+{% if heat.entries.all.count > 0 %}
+<h4>Competing Entrants</h4>
+<ul>
+    {% for entry in heat.entries.all %}
+    <li>Brew {{ entry.label }} {% if user.is_superuser %}[{{entry.brewer}}: {{entry.name}}]{% endif %}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if heat.status == "REGR" %}
+    <p>This heat is still being set up</p>
+{% elif heat.status == "OPEN" %}
+    {% if request.user.is_authenticated %} 
+        {% if judgement %}
+            <p>Scoresheet submitted</p>
+            {% comment %}
+            <p><a href="{% url 'judgement' heat.id %}">Edit your scoresheet</a></p>
+            {% endcomment %}
+        {% else %}
+            <p><a href="{% url 'judgement' heat.id %}">Submit your scoresheet</a></p>
+        {% endif %}
+    {% else %}
+    <p><a href="/login/">Login</a> to submit your scoresheet</p>
+    {% endif %}
+{% elif heat.status == "CLSD" and not request.user.is_staff %}
+    <p>This heat is not currently open for scoring</p>
+{% elif heat.status == "COMP" or request.user.is_staff %}
+    <h4>Criteria</h4>
+    <ul>
+        {% for criterion in heat.criteria.all %} 
+        <li>{{ criterion }}</li>
+        {% endfor %}
+    </ul>
+    <h4>Results</h4>
+    <ol>
+        {% for entry, score in results.items %} 
+        <li><span {% if entry in heat.winners.all %}class="winner"{% else %}class="loser"{% endif %}>Brew [{{ entry.label }}]: {{ score.0|floatformat:1 }}</span>
+            {% comment %}{{ entry.name }} by {% if entry.brewer.first_name or entry.brewer.last_name %}{{ entry.brewer.first_name }} {{ entry.brewer.last_name }}{% else %}{{ entry.brewer }}{% endif %}{% endcomment %}
+            <ul>
+                {% for criterion, criterion_score in score.1.items %}
+                <li>{{ criterion.name }}: {{ criterion_score.0|floatformat:1 }} {{ criterion_score.1 }}</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endfor %}
+    </ol>
+{% endif %}
+
+{% if user.is_superuser %}
+    <h2>Update Heat</h2>
+    <form action="." method="post">
+        {% csrf_token %}
+        {{ heat_form|crispy }}
+        <button class="btn btn-primary btn-block" type="submit" name="submit_heat_update">Submit</button>
+    </form>
+{% endif %}
+
+
+{% endblock %}

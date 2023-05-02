@@ -1,41 +1,11 @@
 {% extends "brews/scaffold.html" %}
+{% load crispy_forms_tags %}
 
 {% block title %}
 Competitions
 {% endblock %}
 
 {% block content %}
-
-<h1>Welcome to BrewComp</h1>
-<p>
-    Comparisons are hard and using scales that require finer distinctions than 
-    we can reliably make (such as the 20 point scale for flavor on the BJCP 
-    scorecard) introduces subjectivity and is much more prone to error 
-    (<a href="https://books.google.com/books/about/What_We_Know_About_Grading.html?id=hRaIDwAAQBAJ&source=kp_book_description">Guskey, Thomas R. "Chapter 1" <i>What We Know about Grading</i>, 2019</a>). 
-    BrewComp attempts to
-    eliminate these problems by making the levels of comparison smaller by 
-    breaking a large number of entries into size-limited heats and reducing the 
-    scale to a simple ranking (best to worst). The hope is that this will 
-    produce a much more accurate determination of the relative ranking of 
-    the brews in a smaller competition 
-    but could also be mapped back to the more traditional scale used by the 
-    BJCP to give a more absolute determination of how the brews would have 
-    scored. 
-</p>
-<p>
-    BrewComp was designed and implemented by Dan Wheadon for the competitions
-    held by the 
-    <a href="https://www.facebook.com/groups/ChicagoHomeBrewersGroup/">
-        Chicago Home Brewer's (Facebook) Group
-    </a>. If successful, it could be made available to others who would like to 
-    use it for their own local competitions.
-    Imlemented using <a href="https://www.djangoproject.com/">Django</a>, the source code can be found on 
-    <a href="https://github.com/dwheadon/BrewComp">GitHub</a>. 
-    If you encounter any problems on the site please 
-    <a href="{% url 'feedback' %}">send feedback</a> 
-    so we can continue to improve the product.
-</p>
-
 {% if comps_present.count > 0 %}
 <h2>Today's competitions</h2>
 <ul>
@@ -66,4 +36,14 @@ Competitions
 {% else %}
 <p>No future competitions</p>
 {% endif %}
+
+{% if user.is_superuser %}
+<h2>New Competition</h2>
+<form action="." method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button class="btn btn-primary btn-block" type="submit">Submit</button>
+</form>
+{% endif %}
+
 {% endblock %}

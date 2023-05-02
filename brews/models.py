@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
+from django.db.models import Q
+import random
 
 
 # class Brewer(models.Model):
@@ -83,15 +86,40 @@ class Criterion(models.Model):
 #     appearance = models.PositiveSmallIntegerField(max=3)
 
 
+def get_random_labels():
+    labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+    random.shuffle(labels)
+    return "".join(labels)
+
+
 class Competition(models.Model):
+    class Status(models.TextChoices):
+        REGISTRATION = "REGR", _("Registration")  # for entries
+        OPEN = "OPEN", _("Open")  # for judging
+        CLOSED = "CLSD", _("Closed")  # for judging
+        COMPLETE = "COMP", _("Complete")  # ready to show results
+
     date = models.DateField()
     name = models.CharField(max_length=255, blank=True)
+    labels = models.CharField(max_length=26, default=get_random_labels)
     # location = models.CharField(max_length=255)
     # judges = models.ManyToManyField(User, blank=True)  # registered: need to know if everyone registered has submitted or if still waiting on someone
     # entries = models.ManyToManyField(Entry, blank=True)  # must be finalized before any scoresheets are submitted
-    criteria = models.ManyToManyField(Criterion)  # may want to limit the criteria to be used for a particular competition
+    criteria = models.ManyToManyField(Criterion)  # the general range for a particular competition
     # judgments = models.ManyToManyField(Judgement)  # must contain one per registered judge before you tabulate the results
-    open = models.BooleanField()
+    status = models.CharField(max_length=4, choices=Status.choices, default=Status.REGISTRATION)
+
+    def get_next_label(self):
+        label = self.labels[0]
+        self.labels = self.labels[1:]
+        self.save()
+        return label
+    
+    def get_next_round(self):
+        rounds = Round.objects.filter(competition=self)
+        if rounds.count() == 0:
+            return 1
+        return rounds.last().number + 1
 
     def __str__(self) -> str:
         return str(self.date) + " " + self.name
@@ -102,7 +130,7 @@ class Competition(models.Model):
 
 class Entry(models.Model):
     competition = models.ForeignKey(Competition, models.CASCADE)
-    label = models.CharField(max_length=255)  # Anonymous label like: A, B, C, D...
+    label = models.CharField(max_length=1)  # Anonymous label like: A, B, C, D...
     # brew = models.ForeignKey(Brew, on_delete=models.CASCADE)
     brewer = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)  # of the brew
@@ -116,17 +144,51 @@ class Entry(models.Model):
         unique_together = ['competition', 'label']
 
 
-class Judgement(models.Model):
+class Round(models.Model):
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE)
+    number = models.PositiveSmallIntegerField()
+    status = models.CharField(max_length=4, choices=Competition.Status.choices, default=Competition.Status.REGISTRATION)
+    entries = models.ManyToManyField(Entry)
+
+    def get_next_heat(self):
+        heats = Heat.objects.filter(round=self)
+        if heats.count() == 0:
+            return 1
+        return heats.last().number + 1
+
+    def __str__(self) -> str:
+        return "Round " + str(self.number) + " for " + str(self.competition)
+    
+    class Meta:
+        ordering = ['competition', 'number']
+
+
+class Heat(models.Model):  # A sub-competition
+    round = models.ForeignKey(Round, on_delete=models.CASCADE)
+    number = models.PositiveSmallIntegerField()
+    criteria = models.ManyToManyField(Criterion, blank=True)  # The specific range for entries in this heat
+    status = models.CharField(max_length=4, choices=Competition.Status.choices, default=Competition.Status.REGISTRATION)
+    entries = models.ManyToManyField(Entry, blank=True, related_name="heats_entered")
+    winners = models.ManyToManyField(Entry, blank=True, related_name="heats_won")
+
+    def __str__(self) -> str:
+        return "Heat " + str(self.round.number) + "-" + str(self.number) + " for " + str(self.round.competition)
+    
+    class Meta:
+        ordering = ['round', 'number']
+
+
+class Judgement(models.Model):
+    heat = models.ForeignKey(Heat, on_delete=models.CASCADE)
     judge = models.ForeignKey(User, on_delete=models.CASCADE)  # needs to be registered for this competition
     # rankings = models.ManyToManyField(Ranking)  # must be one per criteria for this competition
 
     def __str__(self) -> str:
-        return str(self.competition) + ": " + str(self.judge)
+        return str(self.heat) + ": " + str(self.judge)
     
     class Meta:
-        ordering = ['competition', 'judge']  # !!! add a time field and order by time rather than judge
-        unique_together = ['competition', 'judge']
+        ordering = ['heat', 'judge']  # !!! add a time field and order by time rather than judge
+        unique_together = ['heat', 'judge']
 
 
 class Ranking(models.Model):

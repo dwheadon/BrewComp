@@ -1,0 +1,59 @@
+{% extends "brews/scaffold.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+Round
+{% endblock %}
+
+{% block content %}
+
+<h1><a href="{% url 'competition' round.competition.id %}">{{ round.competition.name }}</a></h1>
+<h2>Round {{ round.number }}</h2>
+{% if round.status == "REGR" %}
+    <p>This round is still being set up</p>
+{% endif %}
+
+{% if round.entries.all.count > 0 %}
+<h4>Competing Entrants</h4>
+<ul>
+    {% for entry in round.entries.all %}
+    <li>Brew {{ entry.label }} {% if user.is_superuser %}[{{entry.brewer}}: {{entry.name}}]{% endif %}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if round.status != "REGR" or request.user.is_staff %}
+    <h4>Heats</h4>
+    <ul>
+        {% for heat in round.heat_set.all %}
+        <li><a href="{% url 'heat' heat.id %}">Heat {{ heat.number }}</a></li>
+        {% endfor %} 
+    </ul>
+{% endif %}
+
+{% if round.status == "CLSD" %} 
+<p>Scores are being tallied...</p>
+{% elif round.status == "COMP" %}
+<h4>Winners</h4>
+{% for entry in winners %}
+<li>Brew {{ entry.label }}</li>
+{% endfor %}
+{% endif %}
+
+{% if user.is_superuser %}
+<h2>Update Round</h2>
+<form action="." method="post">
+    {% csrf_token %}
+    {{ round_form|crispy }}
+    <button class="btn btn-primary btn-block" type="submit" name="submit_round_update">Submit</button>
+</form>
+
+<h2>Add Heat</h2>
+<form action="." method="post">
+    {% csrf_token %}
+    {{ heat_form|crispy }}
+    <button class="btn btn-primary btn-block" type="submit" name="submit_new_heat">Submit</button>
+</form>
+{% endif %}
+
+{% endblock %}

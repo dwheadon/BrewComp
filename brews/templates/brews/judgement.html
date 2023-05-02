@@ -41,26 +41,26 @@ Scoresheet
 {% endblock %}
 
 {% block content %}
-<h1>Scoresheet for {{ competition.name }}</h1>
+<h1>Scoresheet for {{ heat.round.competition.name }} Round {{ heat.round.number }} Heat {{ heat.label }}</h1>
 <form action="." method="post">
     {% csrf_token %}
-    {% for criterion in competition.criteria.all %}
+    {% for criterion in heat.round.competition.criteria.all %}
     <h3>{{ criterion.name }}</h3>
     <table>
         <tr>
             <th rowspan="2">Brew<br/>Label</th>
-            <th class="best" colspan="{{ competition.entry_set.all.count|add:'-2' }}">Best</th>
+            <th class="best" colspan="{{ heat.entries.all.count|add:'-2' }}">Best</th>
             <th class="worst" colspan="2">Worst</th>
         </tr>
         <tr>
-            {% for entry in competition.entry_set.all %}
+            {% for entry in heat.entries.all %}
             <th>{{ forloop.counter }}</th>
             {% endfor %}
         </tr>
-        {% for entry in competition.entry_set.all %}
+        {% for entry in heat.entries.all %}
         <tr>
             <td>{{ entry.label }}</td>
-            {% for score in competition.entry_set.all %}
+            {% for score in heat.entries.all %}
             <td><input type="radio" name="criterion-{{ criterion.id }}-brew-{{ entry.id }}" data-col="{{ forloop.counter }}" value="{{ forloop.counter }}"></td>
             {% endfor %}
         </tr>

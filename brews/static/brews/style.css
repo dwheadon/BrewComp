@@ -2,6 +2,14 @@ nav {
     background-color: #f0dc79;
 }
 
+span.winner {
+    background-color: rgb(156, 224, 53);
+}
+
+span.loser {
+    background-color: rgb(255, 109, 109);
+}
+
 .btn-primary {
     background-color: #f0dc79;
     --bs-btn-color: #000;

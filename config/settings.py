@@ -29,6 +29,7 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ['127.0.0.1', 'dwheadon.pythonanywhere.com']
 
+INTERNAL_IPS = ['127.0.0.1']
 
 # Application definition
 
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
     'hijack.contrib.admin',
     'crispy_forms',
     'crispy_bootstrap5',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -59,6 +61,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 

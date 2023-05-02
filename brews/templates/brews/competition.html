@@ -1,4 +1,5 @@
 {% extends "brews/scaffold.html" %}
+{% load crispy_forms_tags %}
 
 {% block title %}
 Competition
@@ -6,39 +7,42 @@ Competition
 
 {% block content %}
 <h1>{{ competition.name }}</h1>
-<h5>{% if today < competition.date %}To be held{% else %}Held{% endif %} on {{ competition.date |date:"M d, Y" }}</h5>
+<h6>{% if today < competition.date %}To be held{% else %}Held{% endif %} on {{ competition.date |date:"M d, Y" }}</h6>
 
-{% if competition.open %}
-    {% if request.user.is_authenticated %} 
-        {% if judgement %}
-            <p>Scoresheet submitted</p>
-            {% comment %}
-            <p><a href="{% url 'judgement' competition.id %}">Edit your scoresheet</a></p>
-            {% endcomment %}
-        {% else %}
-            <p><a href="{% url 'judgement' competition.id %}">Submit your scoresheet</a></p>
-        {% endif %}
-    {% else %}
-    <p><a href="/login/">Login</a> to submit your scoresheet</p>
-    {% endif %}
-{% elif today >= competition.date and results %}
-<h4>Results</h4>
-<ol>
-    {% for entry, score in results.items %} 
-    <li>[{{ entry.label }}] {{ entry.name }} by {% if entry.brewer.first_name or entry.brewer.last_name %}{{ entry.brewer.first_name }} {{ entry.brewer.last_name }}{% else %}{{ entry.brewer }}{% endif %}: {{ score.0|floatformat:1 }}
-        <ul>
-            {% for criterion, criterion_score in score.1.items %}
-            <li>{{ criterion.name }}: {{ criterion_score.0|floatformat:1 }} {{ criterion_score.1 }}</li>
-            {% endfor %}
-        </ul>
-    </li>
-    {% endfor %}
-</ol>
-{% elif competition.entry_set.all.count > 0 %}
-<h4>Currently Registered Entrants</h4>
+{% if competition.entry_set.all.count > 0 %}
+<h4>{% if competition.status == "REGR" %}Currently Registered{% else %}Competing{% endif %} Entrants</h4>
 <ul>
     {% for entry in competition.entry_set.all %}
-    <li>{% if entry.brewer.first_name or entry.brewer.last_name %}{{ entry.brewer.first_name }} {{ entry.brewer.last_name }}{% else %}{{ entry.brewer }}{% endif %}</li>
+    <li>{% if entry.brewer.first_name or entry.brewer.last_name %}{{ entry.brewer.first_name }} {{ entry.brewer.last_name }}{% else %}{{ entry.brewer }}{% endif %} {% if user.is_superuser %}[{{entry.label}}: {{entry.name}}]{% endif %}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if competition.criteria.count != 0 %}
+    {% if competition.status != "COMP" %} 
+    <h4>Scoring Criteria</h4>
+    {% else %} 
+    <h4>Scoring Range</h4>
+    {% endif %}
+    <ul>
+    {% for criterion in competition.criteria.all %}
+        <li>{{ criterion }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% if competition.status == "REGR" %}
+<h4>Register a Brew</h4>
+<form action="." method="post">
+    {% csrf_token %}
+    {{ entry_form|crispy }}
+    <button class="btn btn-primary btn-block" type="submit" name="submit_entry_registration">Submit</button>
+</form>
+{% else %}
+<h4>Rounds</h4>
+<ul>
+    {% for round in competition.round_set.all %}
+    <li><a href="{% url 'round' round.id %}">Round {{ round.number }}</a></li>
     {% endfor %}
 </ul>
 {% endif %}
@@ -53,18 +57,30 @@ Competition
 </ul>
 {% endif %}
 
-{% if competition.criteria.count != 0 %}
-    <br />
-    {% if competition.open %} 
-    <h4>Scoring Criteria</h4>
-    {% else %} 
-    <h4>Scoring Range</h4>
-    {% endif %}
-    <ul>
-    {% for criterion in competition.criteria.all %}
-        <li>{{ criterion }}</li>
-    {% endfor %}
-    </ul>
+{% if competition.status == "CLSD" %} 
+<p>Scores are being tallied...</p>
+{% elif competition.status == "COMP" %}
+<h4>Winners</h4>
+{% for entry in winners %}
+<li>Brew {{ entry.label }}</li>
+{% endfor %}
+{% endif %}
+
+{% if user.is_superuser %}
+<h2>Update Competition</h2>
+<form action="." method="post">
+    {% csrf_token %}
+    {{ competition_form|crispy }}
+    <button class="btn btn-primary btn-block" type="submit" name="submit_competition_update">Submit</button>
+</form>
+
+<h2>Add Round</h2>
+<form action="." method="post">
+    {% csrf_token %}
+    {{ round_form|crispy }}
+    <button class="btn btn-primary btn-block" type="submit" name="submit_new_round">Submit</button>
+</form>
+
 {% endif %}
 
 {% endblock %}
