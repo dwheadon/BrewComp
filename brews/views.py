@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from .models import *
 from .forms import *
 from django.utils import timezone
@@ -29,7 +30,7 @@ def competitions(request):
         form = CreateCompetitionForm(request.POST)
         if form.is_valid():
             form.save()
-            form = CreateCompetitionForm()
+            return redirect("competitions")
     context = {
         'request': request,
         'comps_present': comps_present,  # !!! order by name?
@@ -59,14 +60,13 @@ def competition(request, competition_id):
                 entry.label = competition.get_next_label()
                 entry.brewer = request.user
                 entry.save()
-                entry_form = EntryForm()
-                HttpResponseRedirect()
+                return redirect("competition", competition_id=competition_id)
                 # djw: need to be able to retract my (and only my) entries as well
         elif 'submit_competition_update' in request.POST:
             competition_form = UpdateCompetitionForm(request.POST, instance=competition)
             if competition_form.is_valid():
                 competition_form.save()
-                competition_form = UpdateCompetitionForm(instance=competition)
+                return redirect("competition", competition_id=competition_id)
         elif 'submit_new_round' in request.POST:
             round_form = RoundForm(request.POST)
             if round_form.is_valid():
@@ -81,6 +81,8 @@ def competition(request, competition_id):
                 else:
                     last_round_winners = Entry.objects.filter(heats_won__round=last_round)
                     round.entries.add(*last_round_winners)
+                return redirect("competition", competition_id=competition_id)
+
     context = {
         'request': request,
         'judgement': judgement,
@@ -105,7 +107,7 @@ def round(request, round_id):
             round_form = UpdateRoundForm(request.POST, instance=round)
             if round_form.is_valid():
                 round_form.save()
-                round_form = UpdateRoundForm(instance=round)
+                return redirect("round", round_id=round_id)
         elif 'submit_new_heat' in request.POST:
             heat_form = CreateHeatForm(request.POST)
             if heat_form.is_valid():
@@ -115,7 +117,7 @@ def round(request, round_id):
                 heat.status = Competition.Status.REGISTRATION
                 heat.save()
                 heat.criteria.add(*round.competition.criteria.all())
-
+                return redirect("round", round_id=round_id)
 
     context = {
         'request': request,
@@ -142,12 +144,7 @@ def heat(request, heat_id):
             heat_form = UpdateHeatForm(request.POST, instance=heat)
             if heat_form.is_valid():
                 heat_form.save()
-                heat_form = UpdateHeatForm(instance=heat)
-                # !!! DRY
-                heat_form.fields['entries'].queryset = Entry.objects.filter(round=heat.round) # .exclude(heats_entered__round=heat.round)
-                heat_form.fields['winners'].queryset = Entry.objects.filter(heats_entered=heat) # .exclude(heats_entered__round=heat.round)
-
-
+                return redirect("heat", head_id=heat_id)
     if heat.status == Competition.Status.CLOSED or heat.status == Competition.Status.COMPLETE:
         results = {}
         num_entries = heat.entries.all().count()
