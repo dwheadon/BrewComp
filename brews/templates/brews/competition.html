@@ -14,7 +14,7 @@ Competition
 <h4>{% if competition.status == "REGR" %}Currently Registered{% else %}Competing{% endif %} Entrants</h4>
 <ul>
     {% for entry in competition.entry_set.all %}
-    <li>{% if entry.brewer.first_name or entry.brewer.last_name %}{{ entry.brewer.first_name }} {{ entry.brewer.last_name }}{% else %}{{ entry.brewer }}{% endif %} {% if user.is_superuser %}[{{entry.label}}: {{entry.name}}]{% endif %}</li>
+    <li>{% if entry.brewer.first_name or entry.brewer.last_name %}{{ entry.brewer.first_name }} {{ entry.brewer.last_name }}{% else %}{{ entry.brewer }}{% endif %} {% if user.is_staff %}[{{entry.label}}: {{entry.name}}]{% endif %}</li>
     {% endfor %}
 </ul>
 {% endif %}
@@ -65,7 +65,7 @@ Competition
     {% endfor %}
 {% endif %}
 
-{% if user.is_superuser %}
+{% if user.is_staff %}
 <h2>Update Competition</h2>
 <form action="." method="post">
     {% csrf_token %}

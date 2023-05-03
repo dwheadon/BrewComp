@@ -17,7 +17,7 @@ Round
 <h4>Competing Entrants</h4>
 <ul>
     {% for entry in round.entries.all %}
-    <li>Brew {{ entry.label }} {% if user.is_superuser %}[{{entry.brewer}}: {{entry.name}}]{% endif %}</li>
+    <li>Brew {{ entry.label }} {% if user.is_staff %}[{{entry.brewer}}: {{entry.name}}]{% endif %}</li>
     {% endfor %}
 </ul>
 {% endif %}
@@ -40,7 +40,7 @@ Round
 {% endfor %}
 {% endif %}
 
-{% if user.is_superuser %}
+{% if user.is_staff %}
 <h2>Update Round</h2>
 <form action="." method="post">
     {% csrf_token %}

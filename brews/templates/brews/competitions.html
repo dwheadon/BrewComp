@@ -41,7 +41,7 @@ Competitions
 <p>If you can't see any competitions, it may be because you need an access key. Ask your competition organizer.</p>
 {% endif %}
 
-{% if user.is_superuser %}
+{% if user.is_staff %}
 <h2>New Competition</h2>
 <form action="." method="post">
     {% csrf_token %}

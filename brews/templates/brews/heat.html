@@ -13,7 +13,7 @@ Heat
 <h4>Competing Entrants</h4>
 <ul>
     {% for entry in heat.entries.all %}
-    <li>Brew {{ entry.label }} {% if user.is_superuser %}[{{entry.brewer}}: {{entry.name}}]{% endif %}</li>
+    <li>Brew {{ entry.label }} {% if user.is_staff %}[{{entry.brewer}}: {{entry.name}}]{% endif %}</li>
     {% endfor %}
 </ul>
 {% endif %}
@@ -69,7 +69,7 @@ Heat
     {% endif %}
 {% endif %}
 
-{% if user.is_superuser %}
+{% if user.is_staff %}
     <h2>Update Heat</h2>
     <form action="." method="post">
         {% csrf_token %}
@@ -78,7 +78,7 @@ Heat
     </form>
 {% endif %}
 
-{% if user.is_superuser and heat.status == "CLSD" %}
+{% if user.is_staff and heat.status == "CLSD" %}
     <h2>Update Heat Criteria</h2>
     <form action="." method="post">
         {% csrf_token %}
