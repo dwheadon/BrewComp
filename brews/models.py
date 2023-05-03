@@ -99,7 +99,7 @@ def get_random_access_key():
 
 class Competition(models.Model):
     class Status(models.TextChoices):
-        REGISTRATION = "REGR", _("Registration")  # for entries
+        REGISTRATION = "REGR", _("Setup")  # for entries
         OPEN = "OPEN", _("Open")  # for judging
         CLOSED = "CLSD", _("Closed")  # for judging
         COMPLETE = "COMP", _("Complete")  # ready to show results

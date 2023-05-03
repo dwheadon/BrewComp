@@ -41,7 +41,7 @@ Scoresheet
 {% endblock %}
 
 {% block content %}
-<h1>Scoresheet for {{ heat.round.competition.name }} Round {{ heat.round.number }} Heat {{ heat.label }}</h1>
+<h1>Scoresheet for <a href="{% url 'competition' heat.round.competition.id %}">{{ heat.round.competition.name }}</a>: <a href="{% url 'round' heat.round.id %}">Round {{ heat.round.number }}</a>, <a href="{% url 'heat' heat.id %}">Heat {{ heat.number }}</a></h1>
 <form action="." method="post">
     {% csrf_token %}
     {% for criterion in heat.criteria.all %}

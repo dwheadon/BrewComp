@@ -5,6 +5,15 @@ Error
 {% endblock %}
 
 {% block content %}
-<h1>Scoresheet error</h1>
-<p>There was a problem with your scoresheet submission for {{ heat }}. Make sure you fill out all the criteria. Please go back (button) and try again.</p>
+
+<h1>Scoresheet submission error</h1>
+<p>There was a problem with your scoresheet submission for <a href="{% url 'competition' heat.round.competition.id %}">{{ heat.round.competition.name }}</a>: <a href="{% url 'round' heat.round.id %}">Round {{ heat.round.number }}</a>: <a href="{% url 'heat' heat.id %}">Heat {{ heat.number }}</a></p>
+{% if heat.status != "OPEN" %}
+<p>The heat you were trying to submit to has already been closed.</p>
+{% elif judgement %}
+<p>You can only submit a single scorecard for a heat. If you made an error in your submission, speak with the competition organizers.</p>
+{% else %}
+<p>Make sure you fill out all the criteria. Please go back (button) and try again.</p>
+{% endif %}
+
 {% endblock %}

@@ -235,8 +235,12 @@ def judgement(request, heat_id):
     heat = Heat.objects.get(id=heat_id)
     if heat.round.competition.access_key and not (session_access_key == heat.round.competition.access_key or request.user.is_staff):
         return redirect('unauthorized')
-    
+        
     if request.method == 'POST':
+        judgement = Judgement.objects.filter(heat=heat, judge=request.user).first()
+        if judgement:  # the user has already submitted a scorecard for this heat
+            return redirect('judgement_error', heat_id=heat_id)
+
         error = None
         data = {}
         for key, value in request.POST.items():
@@ -292,10 +296,12 @@ def judgement_error(request, heat_id):
     heat = Heat.objects.get(id=heat_id)
     if heat.round.competition.access_key and not (session_access_key == heat.round.competition.access_key or request.user.is_staff):
         return redirect('unauthorized')
-    
+    judgement = Judgement.objects.filter()
+
     context = {
         'request': request,
         'heat': heat,
+        'judgement': judgement,
     }
     return render(request, "brews/judgement_error.html", context)
 
@@ -308,7 +314,8 @@ def judgement_performance(request, heat_id):
     if heat.round.competition.access_key and not (session_access_key == heat.round.competition.access_key or request.user.is_staff):
         return redirect('unauthorized')
     
-    judgement = Judgement.objects.filter(heat=heat, judge=request.user).first()  # should only be one
+    judgement = Judgement.objects.filter(heat=heat, judge=request.user).first()
+
     context = {
         'request': request,
         'heat': heat,

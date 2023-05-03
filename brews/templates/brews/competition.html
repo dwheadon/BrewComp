@@ -40,29 +40,32 @@ Competition
     <button class="btn btn-primary btn-block" type="submit" name="submit_entry_registration">Submit</button>
 </form>
 {% else %}
-<h4>Rounds</h4>
-<ul>
-    {% for round in competition.round_set.all %}
-    <li><a href="{% url 'round' round.id %}">Round {{ round.number }}: {% for entry in round.entries.all %}{{ entry.label }}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</a></li>
-    {% endfor %}
-</ul>
-{% endif %}
-
-{% if competition.judgement_set.all.count > 0 %}
-<br />
-<h4>Submitted scoresheets</h4>
-<ul>
-    {% for judgement in competition.judgement_set.all %}
-    <li>{% if judgement.judge.first_name or judgement.judge.last_name %}{{ judgement.judge.first_name }} {{ judgement.judge.last_name }}{% else %}{{ judgement.judge }}{% endif %}</li>
-    {% endfor %}
-</ul>
+    <h4>Rounds</h4>
+    <ul>
+        {% for round in competition.round_set.all %}
+        <li><a href="{% url 'round' round.id %}">Round {{ round.number }} ({{ round.get_status_display }}): {% for entry in round.entries.all %}{{ entry.label }}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</a></li>
+        {% endfor %}
+    </ul>
+    {% if user.is_staff %}
+    <form action="." method="post">
+        {% csrf_token %}
+        {{ round_form|crispy }}
+        <button class="btn btn-primary btn-block" type="submit" name="submit_new_round">Add Round</button>
+    </form>
+    {% endif %}
 {% endif %}
 
 {% if competition.status == "CLSD" or competition.status == "COMP" or request.user.is_staff %} 
     <h4>Winners</h4>
-    {% for entry in winners %}
-    <li>Brew {{ entry.label }}</li>
-    {% endfor %}
+    {% if winners %}
+    <ul>
+        {% for entry in winners %}
+        <li>Brew {{ entry.label }}</li>
+        {% endfor %}
+    </ul>
+    {% else %} 
+    <p>The last round doesn't have any winners yet.</p>
+    {% endif %}
 {% endif %}
 
 {% if user.is_staff %}
@@ -73,17 +76,17 @@ Competition
     <button class="btn btn-primary btn-block" type="submit" name="submit_competition_update">Submit</button>
 </form>
 
-<h2>Add Round</h2>
-<form action="." method="post">
-    {% csrf_token %}
-    {{ round_form|crispy }}
-    <button class="btn btn-primary btn-block" type="submit" name="submit_new_round">Submit</button>
-</form>
-
+<h2>QR-code (with access code)</h2>
+<p>Give this to the participants of the competition</p>
 {% if 'access' in request.GET %}
-{% qr_from_text request.build_absolute_uri size="M" %}
+    {% qr_from_text request.build_absolute_uri size="M" %}
+    <p>{{ request.build_absolute_uri }}</p>
+{% elif competition.access_key %}
+    {% qr_from_text request.build_absolute_uri|add:"?access="|add:competition.access_key size="M" %}
+    <p>{{ request.build_absolute_uri|add:"?access="|add:competition.access_key }}</p>
 {% else %}
-{% qr_from_text request.build_absolute_uri|add:"?access="|add:competition.access_key size="M" %}
+    {% qr_from_text request.build_absolute_uri size="M" %}
+    <p>{{ request.build_absolute_uri }}</p>
 {% endif %}
 
 {% endif %}

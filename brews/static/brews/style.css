@@ -2,12 +2,20 @@ nav {
     background-color: #f0dc79;
 }
 
+div.container a, div.container a:visited, div.container a:hover, div.container a:link a:active {
+    color: #6e6536;
+}
+
 span.winner {
     background-color: rgb(156, 224, 53);
 }
 
 span.loser {
     background-color: rgb(255, 109, 109);
+}
+
+form {
+    margin-bottom: 1rem;
 }
 
 .btn-primary {

@@ -29,6 +29,13 @@ Round
         <li><a href="{% url 'heat' heat.id %}">Heat {{ heat.number }}: {% for entry in heat.entries.all %}<span class="{% if heat.status == 'COMP'%}{% if entry in heat.winners.all %}winner{% else  %}loser{% endif %}{% endif %}">{{ entry.label }}{% if forloop.last %}</span>{% else %}</span>, {% endif %}{% endfor %}</a></li>
         {% endfor %} 
     </ul>
+    {% if user.is_staff %}
+    <form action="." method="post">
+        {% csrf_token %}
+        {{ heat_form|crispy }}
+        <button class="btn btn-primary btn-block" type="submit" name="submit_new_heat">Add Heat</button>
+    </form>
+    {% endif %}
 {% endif %}
 
 {% if round.status == "CLSD" %} 
@@ -46,13 +53,6 @@ Round
     {% csrf_token %}
     {{ round_form|crispy }}
     <button class="btn btn-primary btn-block" type="submit" name="submit_round_update">Submit</button>
-</form>
-
-<h2>Add Heat</h2>
-<form action="." method="post">
-    {% csrf_token %}
-    {{ heat_form|crispy }}
-    <button class="btn btn-primary btn-block" type="submit" name="submit_new_heat">Submit</button>
 </form>
 {% endif %}
 
