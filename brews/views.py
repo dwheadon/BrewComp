@@ -6,6 +6,7 @@ from .models import *
 from .forms import *
 from django.utils import timezone
 from django.forms import modelformset_factory
+from django.core.mail import send_mail
 
 
 def handle_access_key(request):
@@ -18,6 +19,13 @@ def handle_access_key(request):
 @login_required
 def feedback(request):
     session_access_key = handle_access_key(request)
+    send_mail(
+        "Subject here",
+        "Here is the message.",
+        "dwheadon@gmail.com",
+        ["dwheadon@gmail.com"],
+        fail_silently=False,
+    )
     return HttpResponse("under construction")
 
 
