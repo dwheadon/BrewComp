@@ -14,9 +14,13 @@
 {% if socialaccount_providers %}
 
 <div class="socialaccount_ballot mb-4">
-  <a href="{% provider_login_url 'facebook' method='oauth2' %}" class="btn btn-block btn-social btn-facebook" style="background-color:#3b5998;text-align:center">
+  <a href="{% provider_login_url 'facebook' method='oauth2' %}" class="btn btn-block btn-social btn-facebook" style="text-align:center">
     <i class="bi bi-facebook"></i><span class="fa fa-facebook"></span>
                  Sign in with Facebook
+   </a>
+   <a href="{% provider_login_url 'google' method='oauth2' %}" class="btn btn-block btn-social btn-google" style="text-align:center;">
+    <i class="bi bi-google"></i><span class="fa fa-google"></span>
+                 Sign in with Google
    </a>
   <br /><br />
   <div class="login-or">{% blocktrans with site.name as site_name %}Or, <a href="{{ signup_url }}">sign up</a>

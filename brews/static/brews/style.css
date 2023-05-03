@@ -2,7 +2,7 @@ nav {
     background-color: #f0dc79;
 }
 
-div.container a, div.container a:visited, div.container a:hover, div.container a:link a:active {
+div.container a, div.container a:visited, div.container a:hover, div.container a:link, div.container a:active {
     color: #6e6536;
 }
 
@@ -34,6 +34,11 @@ form {
     --bs-btn-disabled-color: #000;
     --bs-btn-disabled-bg: #f0dc79;
     --bs-btn-disabled-border-color: #f0dc79;
+}
+
+.btn-social {
+    margin-top: 0.5em;
+    color: white !important;
 }
 
 /*
