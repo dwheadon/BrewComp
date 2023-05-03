@@ -1,5 +1,6 @@
 {% extends "brews/scaffold.html" %}
 {% load crispy_forms_tags %}
+{% load qr_code %}
 
 {% block title %}
 Competition
@@ -78,6 +79,8 @@ Competition
     {{ round_form|crispy }}
     <button class="btn btn-primary btn-block" type="submit" name="submit_new_round">Submit</button>
 </form>
+
+{% qr_from_text request.build_absolute_uri|add:"?access="|add:competition.access_key size="M" %}
 
 {% endif %}
 

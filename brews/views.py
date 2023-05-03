@@ -35,6 +35,11 @@ def competitions(request):
     comps_past = Competition.objects.filter(date__lt=today, access_key=session_access_key)
     comps_present = Competition.objects.filter(date=today, access_key=session_access_key)
     comps_future = Competition.objects.filter(date__gt=today, access_key=session_access_key)
+    if request.user.is_staff:
+        comps_past = Competition.objects.filter(date__lt=today)
+        comps_present = Competition.objects.filter(date=today)
+        comps_future = Competition.objects.filter(date__gt=today)
+
     form = CreateCompetitionForm()
     if request.method == "POST":
         form = CreateCompetitionForm(request.POST)
@@ -60,7 +65,7 @@ def competition(request, competition_id):
         if 'access' in request.GET:
             url_access_key = request.GET['access']
             request.session['access_key'] = url_access_key
-        if not (session_access_key == competition.access_key or url_access_key == competition.access_key):
+        if not (session_access_key == competition.access_key or url_access_key == competition.access_key or request.user.is_staff):
                 return redirect('unauthorized')
 
     today = timezone.now().date()
