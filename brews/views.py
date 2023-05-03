@@ -8,28 +8,32 @@ from django.utils import timezone
 from django.forms import modelformset_factory
 
 
+def handle_access_key(request):
+    if 'access' in request.GET:
+        url_access_key = request.GET['access']
+        request.session['access_key'] = url_access_key
+    return request.session.get("access_key", "")
+
+
 @login_required
 def feedback(request):
+    session_access_key = handle_access_key(request)
     return HttpResponse("under construction")
 
 
 def home(request):
-    if 'access' in request.GET:
-        url_access_key = request.GET['access']
-        request.session['access_key'] = url_access_key
+    session_access_key = handle_access_key(request)
     return render(request, "brews/home.html", {})
 
 
 def unauthorized(request):
+    session_access_key = handle_access_key(request)
     return render(request, "brews/unauthorized.html", {})
 
 
 @login_required
 def competitions(request):
-    if 'access' in request.GET:
-        url_access_key = request.GET['access']
-        request.session['access_key'] = url_access_key
-    session_access_key = request.session.get("access_key", "")
+    session_access_key = handle_access_key(request)
 
     today = timezone.now().date()
     comps_past = Competition.objects.filter(date__lt=today).filter(Q(access_key=session_access_key) | Q(access_key=None) | Q(access_key=""))
@@ -58,15 +62,11 @@ def competitions(request):
 
 @login_required
 def competition(request, competition_id):
+    session_access_key = handle_access_key(request)
+
     competition = Competition.objects.get(id=competition_id)
-    if competition.access_key:
-        session_access_key = request.session.get("access_key", "")
-        url_access_key = ""
-        if 'access' in request.GET:
-            url_access_key = request.GET['access']
-            request.session['access_key'] = url_access_key
-        if not (session_access_key == competition.access_key or url_access_key == competition.access_key or request.user.is_staff):
-                return redirect('unauthorized')
+    if competition.access_key and not (session_access_key == competition.access_key or request.user.is_staff):
+        return redirect('unauthorized')
 
     today = timezone.now().date()
     winners = None
@@ -122,7 +122,12 @@ def competition(request, competition_id):
 
 @login_required
 def round(request, round_id):
+    session_access_key = handle_access_key(request)
+
     round = Round.objects.get(id=round_id)
+    if round.competition.access_key and not (session_access_key == round.competition.access_key or request.user.is_staff):
+        return redirect('unauthorized')
+
     winners = Entry.objects.filter(heats_won__in=round.heat_set.all())
     round_form = UpdateRoundForm(instance=round)
     heat_form = CreateHeatForm()
@@ -158,7 +163,12 @@ def round(request, round_id):
 
 @login_required
 def heat(request, heat_id):
+    session_access_key = handle_access_key(request)
+
     heat = Heat.objects.get(id=heat_id)
+    if heat.round.competition.access_key and not (session_access_key == heat.round.competition.access_key or request.user.is_staff):
+        return redirect('unauthorized')
+    
     my_judgement = None
     results = None
     heat_form = UpdateHeatForm(instance=heat)
@@ -220,7 +230,12 @@ def heat(request, heat_id):
 
 @login_required
 def judgement(request, heat_id):
+    session_access_key = handle_access_key(request)
+
     heat = Heat.objects.get(id=heat_id)
+    if heat.round.competition.access_key and not (session_access_key == heat.round.competition.access_key or request.user.is_staff):
+        return redirect('unauthorized')
+    
     if request.method == 'POST':
         error = None
         data = {}
@@ -272,7 +287,12 @@ def judgement(request, heat_id):
 
 @login_required
 def judgement_error(request, heat_id):
+    session_access_key = handle_access_key(request)
+
     heat = Heat.objects.get(id=heat_id)
+    if heat.round.competition.access_key and not (session_access_key == heat.round.competition.access_key or request.user.is_staff):
+        return redirect('unauthorized')
+    
     context = {
         'request': request,
         'heat': heat,
@@ -282,7 +302,12 @@ def judgement_error(request, heat_id):
 
 @login_required
 def judgement_performance(request, heat_id):
+    session_access_key = handle_access_key(request)
+
     heat = Heat.objects.get(id=heat_id)
+    if heat.round.competition.access_key and not (session_access_key == heat.round.competition.access_key or request.user.is_staff):
+        return redirect('unauthorized')
+    
     judgement = Judgement.objects.filter(heat=heat, judge=request.user).first()  # should only be one
     context = {
         'request': request,
