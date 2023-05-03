@@ -32,9 +32,9 @@ def competitions(request):
     session_access_key = request.session.get("access_key", "")
 
     today = timezone.now().date()
-    comps_past = Competition.objects.filter(date__lt=today, access_key=session_access_key)
-    comps_present = Competition.objects.filter(date=today, access_key=session_access_key)
-    comps_future = Competition.objects.filter(date__gt=today, access_key=session_access_key)
+    comps_past = Competition.objects.filter(date__lt=today).filter(Q(access_key=session_access_key) | Q(access_key=None) | Q(access_key=""))
+    comps_present = Competition.objects.filter(date=today).filter(Q(access_key=session_access_key) | Q(access_key=None) | Q(access_key=""))
+    comps_future = Competition.objects.filter(date__gt=today).filter(Q(access_key=session_access_key) | Q(access_key=None) | Q(access_key=""))
     if request.user.is_staff:
         comps_past = Competition.objects.filter(date__lt=today)
         comps_present = Competition.objects.filter(date=today)
