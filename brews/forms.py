@@ -1,3 +1,4 @@
+from django import forms
 from django.forms import ModelForm
 from .models import *
 
@@ -49,3 +50,8 @@ class UpdateCriterionForm(ModelForm):
         model = Criterion
         fields = ['min_points', 'max_points']
 
+
+class FeedbackForm(forms.Form):
+    from_email = forms.EmailField(label="Email")
+    subject = forms.CharField(label="Subject", max_length=100)
+    message = forms.CharField(label="Message", max_length=10000, widget=forms.Textarea)

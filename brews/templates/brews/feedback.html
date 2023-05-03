@@ -1,0 +1,16 @@
+{% extends "brews/scaffold.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+Feedback
+{% endblock %}
+
+{% block content %}
+<h1>Feedback</h1>
+<form action="." method="post">
+    {% csrf_token %}
+    <p>We value your feedback. Please let us know how we can help.</p>
+    {{ form|crispy }}
+    <button class="btn btn-primary btn-block" type="submit" name="submit_competition_update">Submit</button>
+</form>
+{% endblock %}

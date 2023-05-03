@@ -19,14 +19,19 @@ def handle_access_key(request):
 @login_required
 def feedback(request):
     session_access_key = handle_access_key(request)
-    send_mail(
-        "Subject here",
-        "Here is the message.",
-        "dwheadon@gmail.com",
-        ["dwheadon@gmail.com"],
-        fail_silently=False,
-    )
-    return HttpResponse("under construction")
+    if request.method == "POST":
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            send_mail("BrewComp: "+form.cleaned_data["subject"], 
+                form.cleaned_data["message"],
+                form.cleaned_data["from_email"],
+                ["dwheadon@gmail.com"],
+                fail_silently=False,
+            )
+        redirect('home')
+    else:
+        form = FeedbackForm()
+    return render(request, "brews/feedback.html", {'form': form})
 
 
 def home(request):
