@@ -25,8 +25,8 @@ def feedback(request):
         if form.is_valid():
             try:
                 send_mail("BrewComp: "+form.cleaned_data["subject"], 
-                    form.cleaned_data["message"],
-                    form.cleaned_data["from_email"],
+                    "From: " + form.cleaned_data["from_email"] + "\nMessage:\n"+ form.cleaned_data["message"],
+                    None,
                     ["dwheadon@gmail.com"],
                     fail_silently=False,
                 )
