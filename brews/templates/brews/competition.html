@@ -80,7 +80,11 @@ Competition
     <button class="btn btn-primary btn-block" type="submit" name="submit_new_round">Submit</button>
 </form>
 
+{% if 'access' in request.GET %}
+{% qr_from_text request.build_absolute_uri size="M" %}
+{% else %}
 {% qr_from_text request.build_absolute_uri|add:"?access="|add:competition.access_key size="M" %}
+{% endif %}
 
 {% endif %}
 
