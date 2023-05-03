@@ -44,7 +44,7 @@ Scoresheet
 <h1>Scoresheet for {{ heat.round.competition.name }} Round {{ heat.round.number }} Heat {{ heat.label }}</h1>
 <form action="." method="post">
     {% csrf_token %}
-    {% for criterion in heat.round.competition.criteria.all %}
+    {% for criterion in heat.criteria.all %}
     <h3>{{ criterion.name }}</h3>
     <table>
         <tr>

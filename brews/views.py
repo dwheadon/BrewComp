@@ -5,6 +5,7 @@ from django.urls import reverse
 from .models import *
 from .forms import *
 from django.utils import timezone
+from django.forms import modelformset_factory
 
 
 @login_required
@@ -13,18 +14,27 @@ def feedback(request):
 
 
 def home(request):
-    context = {
-        'request': request,
-    }
-    return render(request, "brews/home.html", context)
+    if 'access' in request.GET:
+        url_access_key = request.GET['access']
+        request.session['access_key'] = url_access_key
+    return render(request, "brews/home.html", {})
+
+
+def unauthorized(request):
+    return render(request, "brews/unauthorized.html", {})
 
 
 @login_required
 def competitions(request):
+    if 'access' in request.GET:
+        url_access_key = request.GET['access']
+        request.session['access_key'] = url_access_key
+    session_access_key = request.session.get("access_key", "")
+
     today = timezone.now().date()
-    comps_past = Competition.objects.filter(date__lt=today)
-    comps_present = Competition.objects.filter(date=today)
-    comps_future = Competition.objects.filter(date__gt=today)
+    comps_past = Competition.objects.filter(date__lt=today, access_key=session_access_key)
+    comps_present = Competition.objects.filter(date=today, access_key=session_access_key)
+    comps_future = Competition.objects.filter(date__gt=today, access_key=session_access_key)
     form = CreateCompetitionForm()
     if request.method == "POST":
         form = CreateCompetitionForm(request.POST)
@@ -44,6 +54,15 @@ def competitions(request):
 @login_required
 def competition(request, competition_id):
     competition = Competition.objects.get(id=competition_id)
+    if competition.access_key:
+        session_access_key = request.session.get("access_key", "")
+        url_access_key = ""
+        if 'access' in request.GET:
+            url_access_key = request.GET['access']
+            request.session['access_key'] = url_access_key
+        if not (session_access_key == competition.access_key or url_access_key == competition.access_key):
+                return redirect('unauthorized')
+
     today = timezone.now().date()
     winners = None
     if competition.round_set.count() != 0 and competition.round_set.last().heat_set.count() != 0:
@@ -116,7 +135,10 @@ def round(request, round_id):
                 heat.number = round.get_next_heat()
                 heat.status = Competition.Status.REGISTRATION
                 heat.save()
-                heat.criteria.add(*round.competition.criteria.all())
+                for criteria in round.competition.criteria.all():
+                    criteria.pk = None
+                    criteria.save()
+                    heat.criteria.add(criteria)
                 return redirect("round", round_id=round_id)
 
     context = {
@@ -132,11 +154,12 @@ def round(request, round_id):
 @login_required
 def heat(request, heat_id):
     heat = Heat.objects.get(id=heat_id)
-    judgement = None
+    my_judgement = None
     results = None
     heat_form = UpdateHeatForm(instance=heat)
+    UpdateCriteriaFormSet = modelformset_factory(Criterion, form=UpdateCriterionForm, extra=0, edit_only=True)
+    criteria_formset = UpdateCriteriaFormSet(queryset=heat.criteria.all())
     # Only include entries registered for this round that haven't already been selected for another heat
-    # entries_in_other_heats = Entry.objects.filter(round=heat.round, heats_entered__round=heat.round)
     heat_form.fields['entries'].queryset = Entry.objects.filter(round=heat.round) # .exclude(heats_entered__round=heat.round)
     heat_form.fields['winners'].queryset = Entry.objects.filter(heats_entered=heat) # .exclude(heats_entered__round=heat.round)
     if request.method == "POST":
@@ -144,7 +167,13 @@ def heat(request, heat_id):
             heat_form = UpdateHeatForm(request.POST, instance=heat)
             if heat_form.is_valid():
                 heat_form.save()
-                return redirect("heat", head_id=heat_id)
+                return redirect("heat", heat_id=heat_id)
+        elif 'submit_heat_criteria_update' in request.POST:
+            criteria_formset = UpdateCriteriaFormSet(request.POST)
+            if criteria_formset.is_valid():
+                criteria_formset.save()
+                return redirect("heat", heat_id=heat_id)
+
     if heat.status == Competition.Status.CLOSED or heat.status == Competition.Status.COMPLETE:
         results = {}
         num_entries = heat.entries.all().count()
@@ -168,12 +197,17 @@ def heat(request, heat_id):
             results[entry][0] = average
         results = dict(sorted(results.items(), key=lambda item: -(item[1][0])))
     if request.user.is_authenticated:
-        judgement = Judgement.objects.filter(heat=heat,judge=request.user).first()
+        my_judgement = Judgement.objects.filter(heat=heat,judge=request.user).first()
+    judgements = None
+    if request.user.is_staff:
+        judgements = Judgement.objects.filter(heat=heat)
     context = {
         'request': request,
         'heat': heat,
         'heat_form': heat_form,
-        'judgement': judgement,
+        'criteria_formset': criteria_formset,
+        'judgements': judgements,
+        'my_judgement': my_judgement,
         'results': results,
     }
     return render(request, "brews/heat.html", context)
@@ -182,7 +216,6 @@ def heat(request, heat_id):
 @login_required
 def judgement(request, heat_id):
     heat = Heat.objects.get(id=heat_id)
-    competition = heat.round.competition
     if request.method == 'POST':
         error = None
         data = {}
@@ -196,7 +229,7 @@ def judgement(request, heat_id):
                     data[criterion_id] = {}
                 data[criterion_id][entry_id] = int(value)
         # Verify we have all the data
-        for criterion in competition.criteria.all():
+        for criterion in heat.criteria.all():
             ranks = []
             if criterion.id not in data:
                 error = "Not all criteria submitted"
@@ -233,10 +266,22 @@ def judgement(request, heat_id):
 
 
 @login_required
-def judgement_error(request, competition_id):
-    competition = Competition.objects.get(id=competition_id)
+def judgement_error(request, heat_id):
+    heat = Heat.objects.get(id=heat_id)
     context = {
         'request': request,
-        'competition': competition,
+        'heat': heat,
     }
     return render(request, "brews/judgement_error.html", context)
+
+
+@login_required
+def judgement_performance(request, heat_id):
+    heat = Heat.objects.get(id=heat_id)
+    judgement = Judgement.objects.filter(heat=heat, judge=request.user).first()  # should only be one
+    context = {
+        'request': request,
+        'heat': heat,
+        'judgement': judgement,
+    }
+    return render(request, "brews/judgement_performance.html", context)

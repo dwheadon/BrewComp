@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 import random
-
+import string
+from django.contrib import admin
 
 # class Brewer(models.Model):
 #     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -69,7 +70,7 @@ class Criterion(models.Model):
 
     def __str__(self) -> str:
         return self.name + ": " + str(self.min_points) + "-" + str(self.max_points) + " points"
-    
+        
     class Meta:
         ordering = ['-max_points', 'name']
         verbose_name_plural = "criteria"
@@ -92,6 +93,10 @@ def get_random_labels():
     return "".join(labels)
 
 
+def get_random_access_key():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
+
 class Competition(models.Model):
     class Status(models.TextChoices):
         REGISTRATION = "REGR", _("Registration")  # for entries
@@ -108,6 +113,7 @@ class Competition(models.Model):
     criteria = models.ManyToManyField(Criterion)  # the general range for a particular competition
     # judgments = models.ManyToManyField(Judgement)  # must contain one per registered judge before you tabulate the results
     status = models.CharField(max_length=4, choices=Status.choices, default=Status.REGISTRATION)
+    access_key = models.CharField(max_length=10, default=get_random_access_key, blank=True, null=True)
 
     def get_next_label(self):
         label = self.labels[0]

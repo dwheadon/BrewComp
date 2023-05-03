@@ -16,7 +16,7 @@
                 "DEBUG": "True",
             }
             "django": true,
-            "justMyCode": true
+            "justMyCode": false,
         },
         {
             "name": "Django External",

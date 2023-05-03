@@ -11,7 +11,7 @@ class CreateCompetitionForm(ModelForm):
 class UpdateCompetitionForm(ModelForm):
     class Meta:
         model = Competition
-        fields = ["status"]
+        fields = ["status", "access_key"]
 
 
 class EntryForm(ModelForm):
@@ -43,4 +43,9 @@ class UpdateHeatForm(ModelForm):
         model = Heat
         fields = ['status', 'entries', 'winners']
 
+
+class UpdateCriterionForm(ModelForm):
+    class Meta:
+        model = Criterion
+        fields = ['min_points', 'max_points']
 

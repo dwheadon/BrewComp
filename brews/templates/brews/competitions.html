@@ -37,6 +37,10 @@ Competitions
 <p>No future competitions</p>
 {% endif %}
 
+{% if comps_past.count == 0 and comps_present.count == 0 and comps_future.count == 0 %}
+<p>If you can't see any competitions, it may be because you need an access key. Ask your competition organizer.</p>
+{% endif %}
+
 {% if user.is_superuser %}
 <h2>New Competition</h2>
 <form action="." method="post">

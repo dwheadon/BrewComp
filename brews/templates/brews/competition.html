@@ -42,7 +42,7 @@ Competition
 <h4>Rounds</h4>
 <ul>
     {% for round in competition.round_set.all %}
-    <li><a href="{% url 'round' round.id %}">Round {{ round.number }}</a></li>
+    <li><a href="{% url 'round' round.id %}">Round {{ round.number }}: {% for entry in round.entries.all %}{{ entry.label }}{% if forloop.last %}{% else %}, {% endif %}{% endfor %}</a></li>
     {% endfor %}
 </ul>
 {% endif %}
@@ -57,13 +57,11 @@ Competition
 </ul>
 {% endif %}
 
-{% if competition.status == "CLSD" %} 
-<p>Scores are being tallied...</p>
-{% elif competition.status == "COMP" %}
-<h4>Winners</h4>
-{% for entry in winners %}
-<li>Brew {{ entry.label }}</li>
-{% endfor %}
+{% if competition.status == "CLSD" or competition.status == "COMP" or request.user.is_staff %} 
+    <h4>Winners</h4>
+    {% for entry in winners %}
+    <li>Brew {{ entry.label }}</li>
+    {% endfor %}
 {% endif %}
 
 {% if user.is_superuser %}

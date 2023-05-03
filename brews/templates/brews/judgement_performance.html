@@ -1,0 +1,27 @@
+{% extends "brews/scaffold.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+Judgement Performance
+{% endblock %}
+
+{% block content %}
+<h1>My Judgement Performance for Heat {{ heat.round.number }}-{{ heat.number }}</h1>
+<p>Under construction...</p>
+{% comment %}
+<h4>Results</h4>
+<ol>
+    {% for entry, score in results.items %} 
+    <li><span {% if entry in heat.winners.all %}class="winner"{% else %}class="loser"{% endif %}>Brew [{{ entry.label }}]{% if entry in heat.winners.all or request.user.is_staff or entry.brewer == request.user %}: {{ score.0|floatformat:1 }}{% endif %}{% if entry.brewer == request.user %} (my brew){% endif %}</span>
+        {% if entry in heat.winners.all or request.user.is_staff or entry.brewer == request.user %}
+        <ul>
+            {% for criterion, criterion_score in score.1.items %}
+            <li>{{ criterion.name }}: {{ criterion_score.0|floatformat:1 }} {{ criterion_score.1 }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ol>
+{% endcomment %}
+{% endblock %}

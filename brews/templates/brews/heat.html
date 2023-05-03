@@ -22,7 +22,7 @@ Heat
     <p>This heat is still being set up</p>
 {% elif heat.status == "OPEN" %}
     {% if request.user.is_authenticated %} 
-        {% if judgement %}
+        {% if my_judgement %}
             <p>Scoresheet submitted</p>
             {% comment %}
             <p><a href="{% url 'judgement' heat.id %}">Edit your scoresheet</a></p>
@@ -32,6 +32,14 @@ Heat
         {% endif %}
     {% else %}
     <p><a href="/login/">Login</a> to submit your scoresheet</p>
+    {% endif %}
+    {% if request.user.is_staff and judgements %} 
+        <h4>Scoresheets submitted</h4>
+        <ul>
+            {% for judgement in judgements %}
+            <li>{{ judgement.judge }}</li>
+            {% endfor %}
+        </ul>
     {% endif %}
 {% elif heat.status == "CLSD" and not request.user.is_staff %}
     <p>This heat is not currently open for scoring</p>
@@ -45,16 +53,20 @@ Heat
     <h4>Results</h4>
     <ol>
         {% for entry, score in results.items %} 
-        <li><span {% if entry in heat.winners.all %}class="winner"{% else %}class="loser"{% endif %}>Brew [{{ entry.label }}]: {{ score.0|floatformat:1 }}</span>
-            {% comment %}{{ entry.name }} by {% if entry.brewer.first_name or entry.brewer.last_name %}{{ entry.brewer.first_name }} {{ entry.brewer.last_name }}{% else %}{{ entry.brewer }}{% endif %}{% endcomment %}
+        <li><span {% if entry in heat.winners.all %}class="winner"{% else %}class="loser"{% endif %}>Brew [{{ entry.label }}]{% if entry in heat.winners.all or request.user.is_staff or entry.brewer == request.user %}: {{ score.0|floatformat:1 }}{% endif %}{% if entry.brewer == request.user %} (my brew){% endif %}</span>
+            {% if entry in heat.winners.all or request.user.is_staff or entry.brewer == request.user %}
             <ul>
                 {% for criterion, criterion_score in score.1.items %}
                 <li>{{ criterion.name }}: {{ criterion_score.0|floatformat:1 }} {{ criterion_score.1 }}</li>
                 {% endfor %}
             </ul>
+            {% endif %}
         </li>
         {% endfor %}
     </ol>
+    {% if my_judgement %}
+    <p><a href="{% url 'judgement_performance' heat.id %}">My Judging Performance</a></p>
+    {% endif %}
 {% endif %}
 
 {% if user.is_superuser %}
@@ -66,5 +78,17 @@ Heat
     </form>
 {% endif %}
 
+{% if user.is_superuser and heat.status == "CLSD" %}
+    <h2>Update Heat Criteria</h2>
+    <form action="." method="post">
+        {% csrf_token %}
+        {{ criteria_formset.management_form }}
+        {% for form in criteria_formset %}
+            <h4>{{ form.instance.name }}</h4>
+            {{ form|crispy }}
+        {% endfor %}
+        <button class="btn btn-primary btn-block" type="submit" name="submit_heat_criteria_update">Submit</button>
+    </form>
+{% endif %}
 
 {% endblock %}

@@ -26,7 +26,7 @@ Round
     <h4>Heats</h4>
     <ul>
         {% for heat in round.heat_set.all %}
-        <li><a href="{% url 'heat' heat.id %}">Heat {{ heat.number }}</a></li>
+        <li><a href="{% url 'heat' heat.id %}">Heat {{ heat.number }}: {% for entry in heat.entries.all %}<span class="{% if heat.status == 'COMP'%}{% if entry in heat.winners.all %}winner{% else  %}loser{% endif %}{% endif %}">{{ entry.label }}{% if forloop.last %}</span>{% else %}</span>, {% endif %}{% endfor %}</a></li>
         {% endfor %} 
     </ul>
 {% endif %}
