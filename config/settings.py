@@ -152,19 +152,19 @@ AUTHENTICATION_BACKENDS = (
 
 SOCIALACCOUNT_PROVIDERS = {
     'facebook': {
-        'METHOD': 'js_sdk',
-        'SCOPE': ['email','public_profile'],
-        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+        'METHOD': 'oath2',
+        'SCOPE': ['public_profile'], # email
+        # 'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
         'FIELDS': [
             'id',
-            'email',
+            # 'email',
             'name',
             'first_name',
             'last_name',
-            'verified',
+            # 'verified',
         ],
-        'EXCHANGE_TOKEN': True,
-        'VERIFIED_EMAIL': False,
+        # 'EXCHANGE_TOKEN': True,
+        # 'VERIFIED_EMAIL': False,
     }
 }
 
