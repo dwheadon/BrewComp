@@ -3,7 +3,7 @@
 {% load socialaccount %}
 
 {% block body %}
-<nav class="navbar navbar-expand-md sticky-top">
+<nav class="navbar navbar-expand-sm sticky-top">
     <div class="container-fluid">
         <a href = "{% url 'home' %}" class = "navbar-brand text-black fw-bold brand-font">
             <img src="{% static 'brews/beerMug.svg' %}" alt="Logo" width="26px" class="img-fluid d-inline-block align-text-top"> 
@@ -15,36 +15,31 @@
         <div class="collapse navbar-collapse" id = "navmenu">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                    <a class="nav-link" href="{% url 'home' %}"><i class="bi bi-house"></i> <span class="d-sm-none">Home</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'competitions' %}">Competitions</a>
+                    <a class="nav-link" href="{% url 'competitions' %}"><i class="bi bi-trophy"></i> <span class="d-sm-none">Competitions</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
+                    <a class="nav-link" href="{% url 'feedback' %}"><i class="bi bi-envelope"></i> <span class="d-sm-none">Feedback</span></a>
                 </li>
                 {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin"><i class="bi bi-wrench-adjustable"></i> <span class="d-sm-none">Admin</span></a>
+                </li>
+                {% endif %}
                 {% comment %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'settings' %}">Settings</a>
+                    <a class="nav-link" href="{% url 'settings' %}"><i class="bi bi-gear"></i> <span class="d-sm-none">Settings</span></a>
                 </li>
                 {% endcomment %}
-                
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'account_logout' %}">Sign out</a>
+                    <a class="nav-link" href="{% url 'account_logout' %}"><i class="bi bi-box-arrow-up-right"></i> <span class="d-sm-none">Sign out</span></a>
                 </li>
                 {% else %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'account_login' %}">Sign in</a>
-                </li>
-                {% endif %}
-        
-                {% if user.is_staff %}
-                <li class="nav-item">
-                    <a class="nav-link" href="/admin">Admin</a>
+                    <a class="nav-link" href="{% url 'account_login' %}">Sign in <span class="d-sm-none">Sign in</span></a>
                 </li>
                 {% endif %}
             </ul>

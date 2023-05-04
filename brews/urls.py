@@ -6,6 +6,7 @@ urlpatterns = [
     path("", views.home, name="home"),  # welcome, login, dashboard (once logged in)
     path("unauthorized/", views.unauthorized, name="unauthorized"),
     path("feedback/", views.feedback, name="feedback"),
+    path("settings/", views.feedback, name="settings"),
     path("competition/", views.competitions, name="competitions"),  # info, results (if complete), link to judge
     path("competition/<int:competition_id>/", views.competition, name="competition"),  # info, results (if complete), link to judge
     path("round/<int:round_id>/", views.round, name="round"),  # info, results (if complete), link to judge
